@@ -52,11 +52,6 @@ export default function MyMap(): JSX.Element {
     };
   }, []);
 
-  async function getWeather({ lat, lng }: locationType) {
-    const data = await satelliteData({ lat, lon: lng });
-    console.log(data);
-  }
-
   function kelvinToCelsius(k_temp: number): number {
     return parseFloat((k_temp - 273.15).toFixed(1));
   }
@@ -79,18 +74,22 @@ export default function MyMap(): JSX.Element {
       },
       (results: any, status: any) => {
         if (status === "OK" && results && results.length) {
-          // console.log(results);
           var filtered_array = results.filter((r: any) =>
             r.types.some((st: string) => st.includes("sublocality_"))
           );
 
           // console.log(filtered_array);
           const location = filtered_array[filtered_array.length - 1];
-          const queryParam = new URLSearchParams(searchParams);
-          queryParam.set("lat", String(lat));
-          queryParam.set("lng", String(lng));
-          queryParam.set("location", location.formatted_address);
-          console.log(queryParam);
+          console.log(searchParams);
+          const queryParam = new URLSearchParams({
+            lat: String(lat),
+            lng: String(lng),
+            location: location.formatted_address,
+          });
+          // const queryParam = new URLSearchParams(searchParams);
+          // queryParam.set("lat", String(lat));
+          // queryParam.set("lng", String(lng));
+          // queryParam.set("location", location.formatted_address);
           replace(`${pathname}?${queryParam.toString()}`);
           setLocalData((p: localDataTypes) => {
             return {
@@ -184,7 +183,6 @@ export default function MyMap(): JSX.Element {
         // bermudaTriangle.setMap(map);
 
         map.addListener("click", async (mapsMouseEvent: any) => {
-          console.log(mapsMouseEvent.latLng);
           const lat = mapsMouseEvent.latLng.lat();
           const lng = mapsMouseEvent.latLng.lng();
           // console.log(lat, lng);
@@ -219,6 +217,14 @@ export default function MyMap(): JSX.Element {
           infoWindow.open(map);
         });
 
+        (async () => {
+          const data = await satelliteData({
+            lat: currentLocation.lat,
+            lon: currentLocation.lng,
+          });
+          console.log(data);
+        })();
+
         // new window.google.maps.Circle({
         //   strokeColor: "#FF0000",
         //   strokeOpacity: 0.8,
@@ -232,19 +238,11 @@ export default function MyMap(): JSX.Element {
 
         setMap(map);
 
-        // function showCityBoundaries() {
-        //   const city = "seoul";
-        //   fetch("path/to/city_boundaries.geojson").then((res) =>
-        //     console.log(res)
-        //   );
         // }
       });
     }
   }
 
-  useEffect(() => {
-    console.log(localData);
-  }, [localData]);
   return (
     <div id="map" ref={mapRef} style={{ height: "100%", width: "100%" }} />
   );

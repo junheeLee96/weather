@@ -1,10 +1,16 @@
-import { ReadonlyURLSearchParams } from "next/navigation";
+import { satelliteData } from "../data/data";
+import { ReadonlyURLSearchParams, useSearchParams } from "next/navigation";
+import Card from "./Card";
+type BoardType = {
+  searchParams?: any;
+};
 
-export default function Board({
-  searchParams,
-}: {
-  searchParams: ReadonlyURLSearchParams;
-}) {
-  console.log(searchParams);
-  return <div>gdgdg</div>;
+export default async function Board({ searchParams = undefined }: BoardType) {
+  //   console.log(lat, lon);
+  const data = await satelliteData({
+    lat: searchParams.lat,
+    lon: searchParams.lng,
+  });
+
+  return <div>{data && <Card />}</div>;
 }

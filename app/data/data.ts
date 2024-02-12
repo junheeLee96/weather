@@ -2,7 +2,6 @@ import axios, { AxiosResponse } from "axios";
 import { unstable_cache } from "next/cache";
 import { useRouter } from "next/navigation";
 
-let num = 1;
 export async function satelliteVideo() {
   const router = useRouter();
   console.log(router);
@@ -75,8 +74,8 @@ export async function currentWeather({
   lat,
   lon,
 }: {
-  lat: number;
-  lon: number;
+  lat?: number;
+  lon?: number;
 }) {
   const APIkey = "8ed74ceb5e6a266b531ba7e0ec461a8d";
   const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${APIkey}`;
@@ -91,18 +90,26 @@ export async function satelliteData({
   lat: number;
   lon: number;
 }) {
-  const url = "https://api.openweathermap.org/data/3.0/onecall";
-  const appid = "8ed74ceb5e6a266b531ba7e0ec461a8d";
-  const params = {
-    lat,
-    lon,
-    exclude: "current",
-    appid,
-    lang: "kr",
-  };
+  try {
+    if (!lat || !lon) return null;
+    const url = "https://api.openweathermap.org/data/3.0/onecall";
+    const appid = "8ed74ceb5e6a266b531ba7e0ec461a8d";
+    const params = {
+      lat,
+      lon,
+      exclude: "current",
+      appid,
+      lang: "kr",
+    };
 
-  const data: AxiosResponse = await axios.get(url, { params });
-  return data;
+    const data: AxiosResponse = await axios.get(url, { params });
+    // if (!data.data) return null;
+
+    return data.data;
+  } catch (err) {
+    console.error("Error =  ", err);
+    throw new Error("Failed to fetch revenue data.");
+  }
 }
 
 export async function weatherMap() {

@@ -1,8 +1,44 @@
 "use client";
 
+// import { useEffect } from "react";
+
+// export default function MyMap() {
+//   useEffect(() => {
+//     // return;
+//     if (!window.vw) {
+//       // return console.log(window);
+//       const script = document.createElement("script");
+//       script.src = `https://map.vworld.kr/js/vworldMapInit.js.do?version=2.0&apiKey=${process.env.API_DIGITAL_TWIN_KEY}`;
+//       script.defer = true;
+//       document.head.appendChild(script);
+//       return;
+//     }
+//     console.log(window);
+//     window.vw.MapControllerOption = {
+//       container: "vmap",
+//       mapMode: "2d-map",
+//       basemapType: window.vw.ol3.BasemapType.GRAPHIC,
+//       controlDensity: window.vw.ol3.DensityType.EMPTY,
+//       interactionDensity: window.vw.ol3.DensityType.BASIC,
+//       controlsAutoArrange: true,
+//       homePosition: window.vw.ol3.CameraPosition,
+//       initPosition: window.vw.ol3.CameraPosition,
+//     };
+
+//     new window.vw.MapController(window.vw.MapControllerOption);
+//   }, []);
+//   return (
+//     <div>
+//       gdgdgdgdd
+//       <div id="vmap" style={{ width: "500px", height: "500px" }}></div>
+//     </div>
+//   );
+// }
+
 import { useEffect, useRef, useState } from "react";
-import { currentWeather, geoJson, satelliteData } from "../data/data";
+import { currentWeather, getPolygon, satelliteData } from "../data/data";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import axios from "axios";
 const key = "AIzaSyBRLNCa54UheNNoqc4IbasOxUFwYVe7QhM";
 
 interface localDataTypes {
@@ -35,6 +71,7 @@ export default function MyMap(): JSX.Element {
   });
 
   useEffect(() => {
+    // return;
     window.initMap = initMap;
     if (!window.google) {
       const script = document.createElement("script");
@@ -113,6 +150,19 @@ export default function MyMap(): JSX.Element {
     );
   }
 
+  async function getPoly({ lat, lng }: any) {
+    // console.log(window.origin);
+    const data = await axios.get("http://localhost:3002/api", {
+      params: {
+        lat,
+        lng,
+      },
+    });
+    console.log(data);
+    // const data = await getPolygon({ lat, lng });
+    // console.log(data);
+  }
+
   // 지도 초기화
   async function initMap() {
     if (window.google && !map) {
@@ -154,12 +204,13 @@ export default function MyMap(): JSX.Element {
           const k_temp = parseFloat(current_weather.data.main.temp);
           temp = kelvinToCelsius(k_temp);
         }
-        geocode({
-          lat: currentLocation.lat,
-          lng: currentLocation.lng,
-          map,
-          temp,
-        });
+
+        // geocode({
+        //   lat: currentLocation.lat,
+        //   lng: currentLocation.lng,
+        //   map,
+        //   temp,
+        // });
         // console.log(geocoder);
 
         // const obj = await geoJson();
@@ -183,6 +234,7 @@ export default function MyMap(): JSX.Element {
         // bermudaTriangle.setMap(map);
 
         map.addListener("click", async (mapsMouseEvent: any) => {
+          // axios.get("https://localhost:3000/get_poly");
           const lat = mapsMouseEvent.latLng.lat();
           const lng = mapsMouseEvent.latLng.lng();
           // console.log(lat, lng);
@@ -200,12 +252,15 @@ export default function MyMap(): JSX.Element {
             temp = kelvinToCelsius(k_temp);
           }
 
-          geocode({
-            lat,
-            lng,
-            map,
-            temp,
-          });
+          getPoly({ lat, lng });
+
+          // geocode({
+          //   lat,
+          //   lng,
+          //   map,
+          //   temp,
+          // });
+
           infoWindow.close();
           // Create a new InfoWindow.
           infoWindow = new window.google.maps.InfoWindow({
@@ -217,13 +272,13 @@ export default function MyMap(): JSX.Element {
           infoWindow.open(map);
         });
 
-        (async () => {
-          const data = await satelliteData({
-            lat: currentLocation.lat,
-            lon: currentLocation.lng,
-          });
-          console.log(data);
-        })();
+        // (async () => {
+        //   const data = await satelliteData({
+        //     lat: currentLocation.lat,
+        //     lon: currentLocation.lng,
+        //   });
+        //   console.log(data);
+        // })();
 
         // new window.google.maps.Circle({
         //   strokeColor: "#FF0000",

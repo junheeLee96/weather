@@ -127,43 +127,57 @@ export async function weatherMap() {
   return data;
 }
 
-export const geoData = async () => {
-  const APIkey = "8ed74ceb5e6a266b531ba7e0ec461a8d";
-  const limit = 5;
-  const cityname = "seoul";
-  const krCode = "+82";
-  const url = `http://api.openweathermap.org/geo/1.0/direct?q=${krCode}&limit=${limit}&appid=${APIkey}`;
-  const data: AxiosResponse = await axios.get(url);
-  return data;
-};
-
-export const getPolygon = async ({ lat, lng }: any) => {
-  const key = process.env.API_DIGITAL_TWIN_KEY;
-  // const url = `https://api.vworld.kr/req/data?service=data&request=GetFeature&data=LT_C_ADEMD_INFO&key=${key}&domain=https://localhost&format=json&size=999&page=1&geomFilter=point(14132749.177031 4494202.5212524)`;
-  let url = "https://api.vworld.kr/req/data?";
-  url += "service=data&";
-  url += "request=GetFeature&";
-  url += "data=LT_C_ADEMD_INFO&";
-  url += `key=${key}&`;
-  url += `domain=https://localhost&`;
-  url += "format=jsonp&";
-  url += "size=999&page=1&";
-  url += "geometry=true&";
-  url += `geomFilter=POINT(${lng} ${lat})`;
-  // url += "attrFilter=emd_cd:like:41570107";
-  try {
-    const data = await axios.get(url);
-    // const res = await fetch(url);
-    // const data = await res.json();
-    console.log(
-      "data.data =",
-      data.data.response.result.featureCollection.features[0].geometry
-        .coordinates
-      // data.data.response.result.featureCollection.features
-    );
-    return data;
-  } catch (err) {
-    console.log(err);
-    // throw new Error(err);
+export async function getCurrentWeather({ lat, lng }: any) {
+  function kelvinToCelsius(k_temp: number): number {
+    return parseFloat((k_temp - 273.15).toFixed(1));
   }
-};
+
+  const current_weather = await axios.get(
+    "http://localhost:3002/currentWeather",
+    {
+      params: { lat, lng },
+    }
+  );
+
+  let temp = 0;
+  if (current_weather.status == 200) {
+    const k_temp = parseFloat(current_weather.data.main.temp);
+    temp = kelvinToCelsius(k_temp);
+  }
+  return temp;
+}
+
+export async function getPoly({ lat, lng }: any) {
+  const data = await axios.get("http://localhost:3002/getPoly", {
+    params: {
+      lat,
+      lng,
+    },
+  });
+  if (!data.data) return;
+  const coordinates =
+    data.data.response.result.featureCollection.features[0].geometry
+      .coordinates;
+
+  const triangles: any = [];
+  for (let i = 0; i < coordinates.length; i++) {
+    // console.log("coordinates[i] = ", coordinates[i]);
+    coordinates[i].forEach((coor: any) => {
+      coor.forEach((c: any) => {
+        triangles.push({
+          lng: c[0],
+          lat: c[1],
+        });
+      });
+    });
+  }
+
+  return new window.google.maps.Polygon({
+    paths: triangles,
+    strokeColor: "#FF0000",
+    strokeOpacity: 0.8,
+    strokeWeight: 2,
+    fillColor: "#FF0000",
+    fillOpacity: 0.35,
+  });
+}

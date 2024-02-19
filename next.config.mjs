@@ -6,6 +6,7 @@ const nextConfig = {
   reactStrictMode: false,
   crossOrigin: "anonymous",
   async rewrites() {
+    //not working
     return [
       {
         source: "/req/data/:path*",

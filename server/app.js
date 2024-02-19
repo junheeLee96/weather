@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3002;
 app.use(cors()); // 모든 도메인에서의 요청을 허용하기 위해 CORS 설정
 
 // 예제 API 엔드포인트
-app.get("/api", async (req, res) => {
+app.get("/getPoly", async (req, res) => {
   const { lat, lng } = req.query;
 
   const key = "F70BDFB2-EC41-3AB5-87A3-32E8B45AEA01";
@@ -32,6 +32,42 @@ app.get("/api", async (req, res) => {
     console.error("Error fetching data:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
+});
+
+app.get("/currentWeather", async (req, res) => {
+  const { lat, lng } = req.query;
+  const lon = lng;
+  const APIkey = "8ed74ceb5e6a266b531ba7e0ec461a8d";
+  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${APIkey}`;
+  //   const data = axios.get(url);
+  try {
+    const response = await axios.get(url);
+    res.json(response.data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ err: err });
+  }
+});
+
+app.get("/location", async (req, res) => {
+  const apiKey = "AIzaSyBRLNCa54UheNNoqc4IbasOxUFwYVe7QhM";
+  const address = "서울특별시 강남구";
+
+  const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+    address
+  )}&key=${apiKey}`;
+
+  axios
+    .get(geocodingUrl)
+    .then((response) => {
+      const location = response.data.results[0].geometry.location;
+      console.log(`위도: ${location.lat}, 경도: ${location.lng}`);
+    })
+    .catch((error) => {
+      console.error("Geocoding API 에러:", error);
+    });
+
+  res.json({ message: "zzz" });
 });
 
 app.listen(PORT, () => {

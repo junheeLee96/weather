@@ -1,6 +1,6 @@
 export default function Card({ data }: any) {
   const { daily, hourly, minutely } = data;
-
+  console.log(daily, hourly, minutely);
   //   let category = "daily";
   return (
     <div>

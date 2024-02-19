@@ -1,42 +1,12 @@
 "use client";
 
-// import { useEffect } from "react";
-
-// export default function MyMap() {
-//   useEffect(() => {
-//     // return;
-//     if (!window.vw) {
-//       // return console.log(window);
-//       const script = document.createElement("script");
-//       script.src = `https://map.vworld.kr/js/vworldMapInit.js.do?version=2.0&apiKey=${process.env.API_DIGITAL_TWIN_KEY}`;
-//       script.defer = true;
-//       document.head.appendChild(script);
-//       return;
-//     }
-//     console.log(window);
-//     window.vw.MapControllerOption = {
-//       container: "vmap",
-//       mapMode: "2d-map",
-//       basemapType: window.vw.ol3.BasemapType.GRAPHIC,
-//       controlDensity: window.vw.ol3.DensityType.EMPTY,
-//       interactionDensity: window.vw.ol3.DensityType.BASIC,
-//       controlsAutoArrange: true,
-//       homePosition: window.vw.ol3.CameraPosition,
-//       initPosition: window.vw.ol3.CameraPosition,
-//     };
-
-//     new window.vw.MapController(window.vw.MapControllerOption);
-//   }, []);
-//   return (
-//     <div>
-//       gdgdgdgdd
-//       <div id="vmap" style={{ width: "500px", height: "500px" }}></div>
-//     </div>
-//   );
-// }
-
 import { useEffect, useRef, useState } from "react";
-import { currentWeather, getPolygon, satelliteData } from "../data/data";
+import {
+  currentWeather,
+  getCurrentWeather,
+  getPoly,
+  satelliteData,
+} from "../data/data";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import axios from "axios";
 const key = "AIzaSyBRLNCa54UheNNoqc4IbasOxUFwYVe7QhM";
@@ -72,7 +42,9 @@ export default function MyMap(): JSX.Element {
 
   useEffect(() => {
     // return;
+
     window.initMap = initMap;
+
     if (!window.google) {
       const script = document.createElement("script");
       const script2 = document.createElement("script");
@@ -89,10 +61,6 @@ export default function MyMap(): JSX.Element {
     };
   }, []);
 
-  function kelvinToCelsius(k_temp: number): number {
-    return parseFloat((k_temp - 273.15).toFixed(1));
-  }
-
   function geocode({ lat, lng, map, temp }: goecodeTypes) {
     const geocoder = new window.google.maps.Geocoder();
     if (!geocoder) return;
@@ -104,6 +72,18 @@ export default function MyMap(): JSX.Element {
       lat,
       lng,
     };
+
+    (async () => {
+      const zz = await axios.get("http://localhost:3002/location");
+      console.log(zz);
+      const data = await satelliteData({
+        // lat: Number(lat),
+        // lon: Number(lon),
+        lat: lat,
+        lon: lng,
+      });
+      console.log(data);
+    })();
 
     geocoder.geocode(
       {
@@ -117,7 +97,7 @@ export default function MyMap(): JSX.Element {
 
           // console.log(filtered_array);
           const location = filtered_array[filtered_array.length - 1];
-          console.log(searchParams);
+          // console.log(searchParams);
           const queryParam = new URLSearchParams({
             lat: String(lat),
             lng: String(lng),
@@ -128,6 +108,7 @@ export default function MyMap(): JSX.Element {
           // queryParam.set("lng", String(lng));
           // queryParam.set("location", location.formatted_address);
           replace(`${pathname}?${queryParam.toString()}`);
+          // console.log(`${pathname}?${queryParam.toString()}`);
           setLocalData((p: localDataTypes) => {
             return {
               ...p,
@@ -150,19 +131,6 @@ export default function MyMap(): JSX.Element {
     );
   }
 
-  async function getPoly({ lat, lng }: any) {
-    // console.log(window.origin);
-    const data = await axios.get("http://localhost:3002/api", {
-      params: {
-        lat,
-        lng,
-      },
-    });
-    console.log(data);
-    // const data = await getPolygon({ lat, lng });
-    // console.log(data);
-  }
-
   // 지도 초기화
   async function initMap() {
     if (window.google && !map) {
@@ -178,118 +146,68 @@ export default function MyMap(): JSX.Element {
           mapRef.current,
           {
             center: currentLocation,
-            zoom: 10,
+            zoom: 13,
           }
         );
-        var contentString =
-          '<div id="content" style="width:400px; background-color:red;">' +
-          "My Text comes here" +
-          "</div>";
+        // var contentString =
+        //   '<div id="content" style="width:400px; background-color:red;">' +
+        //   "My Text comes here" +
+        //   "</div>";
 
-        let infoWindow = new window.google.maps.InfoWindow({
-          // content: <div style={{ color: "red" }}>gdgdgd</div>,
+        // let infoWindow = new window.google.maps.InfoWindow({
+        //   // content: <div style={{ color: "red" }}>gdgdgd</div>,
 
-          content: contentString,
-          position: currentLocation,
-        });
+        //   content: contentString,
+        //   position: currentLocation,
+        // });
 
-        infoWindow.open(map);
-        // const geocoder = new window.google.maps.Geocoder();
-        const current_weather = await currentWeather({
+        // infoWindow.open(map);
+        let bermudaTriangle = await getPoly({
           lat: currentLocation.lat,
-          lon: currentLocation.lng,
+          lng: currentLocation.lng,
         });
-        let temp = 0;
-        if (current_weather.status == 200) {
-          const k_temp = parseFloat(current_weather.data.main.temp);
-          temp = kelvinToCelsius(k_temp);
-        }
+        bermudaTriangle.setMap(map);
+        // const geocoder = new window.google.maps.Geocoder();
+        const temp = await getCurrentWeather({
+          lat: currentLocation.lat,
+          lng: currentLocation.lng,
+        });
 
-        // geocode({
-        //   lat: currentLocation.lat,
-        //   lng: currentLocation.lng,
-        //   map,
-        //   temp,
-        // });
-        // console.log(geocoder);
-
-        // const obj = await geoJson();
-        // console.log(obj);
-        // const triangleCoords = [
-        //   { lat: 37.558654, lng: 126.794474 },
-        //   { lat: 37.5125, lng: 127.102778 },
-        //   { lat: 36.5184, lng: 126.8 },
-        // ];
-
-        // // Construct the polygon.
-        // const bermudaTriangle = new window.google.maps.Polygon({
-        //   paths: triangleCoords,
-        //   strokeColor: "#FF0000",
-        //   strokeOpacity: 0.8,
-        //   strokeWeight: 2,
-        //   fillColor: "#FF0000",
-        //   fillOpacity: 0.35,
-        // });
-
-        // bermudaTriangle.setMap(map);
+        geocode({
+          lat: currentLocation.lat,
+          lng: currentLocation.lng,
+          map,
+          temp,
+        });
 
         map.addListener("click", async (mapsMouseEvent: any) => {
           // axios.get("https://localhost:3000/get_poly");
           const lat = mapsMouseEvent.latLng.lat();
           const lng = mapsMouseEvent.latLng.lng();
-          // console.log(lat, lng);
-          // geocode({ lat, lng });
-          // return;
+          geocode({ lat, lng, map, temp });
 
           // Close the current InfoWindow.
-          const current_weather = await currentWeather({
+          // const temp = await getCurrentWeather({ lat, lng });
+
+          bermudaTriangle.setMap(null);
+          bermudaTriangle = await getPoly({
             lat,
-            lon: lng,
+            lng,
+            map,
           });
-          let temp = 0;
-          if (current_weather.status == 200) {
-            const k_temp = parseFloat(current_weather.data.main.temp);
-            temp = kelvinToCelsius(k_temp);
-          }
-
-          getPoly({ lat, lng });
-
-          // geocode({
-          //   lat,
-          //   lng,
-          //   map,
-          //   temp,
+          bermudaTriangle.setMap(map);
+          // getPoly({ lat, lng, map });
+          //Info Window
+          // infoWindow.close();
+          // // Create a new InfoWindow.
+          // infoWindow = new window.google.maps.InfoWindow({
+          //   position: mapsMouseEvent.latLng,
           // });
-
-          infoWindow.close();
-          // Create a new InfoWindow.
-          infoWindow = new window.google.maps.InfoWindow({
-            position: mapsMouseEvent.latLng,
-          });
-          infoWindow.setContent(
-            JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2)
-          );
-          infoWindow.open(map);
+          // infoWindow.setContent(
+          //   JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2)
+          // );
+          // infoWindow.open(map);
         });
-
-        // (async () => {
-        //   const data = await satelliteData({
-        //     lat: currentLocation.lat,
-        //     lon: currentLocation.lng,
-        //   });
-        //   console.log(data);
-        // })();
-
-        // new window.google.maps.Circle({
-        //   strokeColor: "#FF0000",
-        //   strokeOpacity: 0.8,
-        //   strokeWeight: 2,
-        //   fillColor: "#FF0000",
-        //   fillOpacity: 0.35,
-        //   map: map,
-        //   center: currentLocation,
-        //   radius: 2000, // 2km
-        // });
 
         setMap(map);
 

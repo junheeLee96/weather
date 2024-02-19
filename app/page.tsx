@@ -16,7 +16,7 @@ export default function Page({
         <MyMap />
       </div>
       <div>
-        <Board />
+        <Board searchParams={searchParams} />
       </div>
     </div>
   );

@@ -9,14 +9,12 @@ export default function Page({
 }: {
   searchParams: ReadonlyURLSearchParams;
 }) {
-  const url = `https://map.vworld.kr/js/vworldMapInit.js.do?version=2.0&apiKey=${key}&domain=https://localhost`;
   return (
     <div className="min-w-[100vw] min-h-[100vh] bg-white">
-      <div style={{ width: "100%", height: "500px" }}>
-        <MyMap />
-      </div>
       <div>
-        <Board searchParams={searchParams} />
+        <MyMap>
+          <Board />
+        </MyMap>
       </div>
     </div>
   );

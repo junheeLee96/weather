@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -11,7 +13,7 @@ app.use(cors()); // 모든 도메인에서의 요청을 허용하기 위해 CORS
 app.get("/getPoly", async (req, res) => {
   const { lat, lng } = req.query;
 
-  const key = "F70BDFB2-EC41-3AB5-87A3-32E8B45AEA01";
+  const key = process.env.API_DIGITAL_TWIN_KEY;
   let url = "https://api.vworld.kr/req/data?";
   url += "service=data&";
   url += "request=GetFeature&";
@@ -26,7 +28,7 @@ app.get("/getPoly", async (req, res) => {
   try {
     const response = await axios.get(url);
     // 필요한 정보만 선택적으로 출력하거나, JSON.stringify에 replacer 함수 제공
-    console.log(response.data);
+    // console.log(response.data);
     res.json(response.data);
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -37,7 +39,7 @@ app.get("/getPoly", async (req, res) => {
 app.get("/currentWeather", async (req, res) => {
   const { lat, lng } = req.query;
   const lon = lng;
-  const APIkey = "8ed74ceb5e6a266b531ba7e0ec461a8d";
+  const APIkey = process.env.API_OPENWEATHER_KEY;
   const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${APIkey}`;
   //   const data = axios.get(url);
   try {
@@ -50,25 +52,38 @@ app.get("/currentWeather", async (req, res) => {
 });
 
 app.get("/location", async (req, res) => {
-  const apiKey = "AIzaSyBRLNCa54UheNNoqc4IbasOxUFwYVe7QhM";
+  const apiKey = process.env.API_GOOGLEMAP_KEY;
   const address = "서울특별시 강남구";
 
-  const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-    address
-  )}&key=${apiKey}`;
+  // console.log(req.query);
+  //
+  // if()
+  let geocodingUrl;
+  if (req.query.lat) {
+    const { lat, lng } = req.query;
+    geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat}, ${lng}&sensor=false&key=${apiKey}`;
+  } else {
+    const { location } = req.query;
+    geocodingUrl =
+      geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+        address
+      )}&key=${apiKey}`;
+  }
 
-  axios
-    .get(geocodingUrl)
-    .then((response) => {
-      const location = response.data.results[0].geometry.location;
-      console.log(`위도: ${location.lat}, 경도: ${location.lng}`);
-    })
-    .catch((error) => {
-      console.error("Geocoding API 에러:", error);
-    });
+  // let geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+  //   address
+  // )}&key=${apiKey}`;
 
-  res.json({ message: "zzz" });
+  try {
+    const data = await axios.get(geocodingUrl);
+    console.log("data ===", data);
+    res.json(data.data);
+  } catch (err) {
+    res.status(500).json({ err: err });
+  }
 });
+
+// app.get('/get_')
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

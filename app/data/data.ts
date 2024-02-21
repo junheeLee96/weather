@@ -148,6 +148,7 @@ export async function getCurrentWeather({ lat, lng }: any) {
 }
 
 export async function getPoly({ lat, lng }: any) {
+  "use client";
   const data = await axios.get("http://localhost:3002/getPoly", {
     params: {
       lat,
@@ -180,4 +181,20 @@ export async function getPoly({ lat, lng }: any) {
     fillColor: "#FF0000",
     fillOpacity: 0.35,
   });
+}
+
+export function SelectCity(data: any) {
+  if (data.status === 200) {
+    const results = data.data.results;
+    const filtered_array = results.filter((r: any) =>
+      r.types.some((st: string) => st.includes("sublocality_"))
+    );
+    console.log(filtered_array);
+
+    // console.log(filtered_array);
+
+    const location =
+      filtered_array[filtered_array.length - 1].address_components[0].long_name;
+    return location;
+  }
 }

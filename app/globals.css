@@ -32,6 +32,22 @@ body {
   }
 }
 
-.zzzz {
-  color: red;
+* {
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+}
+
+#google-map-info-window {
+  color: black;
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+
+  flex-direction: column;
+  justify-content: center;
+}
+
+#google-map-info-window > div {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }

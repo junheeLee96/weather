@@ -83,35 +83,6 @@ export async function currentWeather({
   return data;
 }
 
-export async function satelliteData({
-  lat,
-  lon,
-}: {
-  lat: number | null;
-  lon: number | null;
-}) {
-  try {
-    if (!lat || !lon) return null;
-    const url = "https://api.openweathermap.org/data/3.0/onecall";
-    const appid = "8ed74ceb5e6a266b531ba7e0ec461a8d";
-    const params = {
-      lat,
-      lon,
-      exclude: "current",
-      appid,
-      lang: "kr",
-    };
-
-    const data: AxiosResponse = await axios.get(url, { params });
-    // if (!data.data) return null;
-
-    return data.data;
-  } catch (err) {
-    console.error("Error =  ", err);
-    throw new Error("Failed to fetch revenue data.");
-  }
-}
-
 export async function weatherMap() {
   // const APIkey = "7cc2b27996d4cbd87aa382b76a44cc19";
   const APIkey = "8ed74ceb5e6a266b531ba7e0ec461a8d";
@@ -126,6 +97,9 @@ export async function weatherMap() {
   const data: AxiosResponse = await axios.get(url);
   return data;
 }
+
+//
+//
 
 export async function getCurrentWeather({ lat, lng }: any) {
   function kelvinToCelsius(k_temp: number): number {
@@ -189,7 +163,6 @@ export function SelectCity(data: any) {
     const filtered_array = results.filter((r: any) =>
       r.types.some((st: string) => st.includes("sublocality_"))
     );
-    console.log(filtered_array);
 
     // console.log(filtered_array);
 
@@ -197,4 +170,42 @@ export function SelectCity(data: any) {
       filtered_array[filtered_array.length - 1].address_components[0].long_name;
     return location;
   }
+}
+
+export async function getCity({ lat, lng }: { lat: string; lng: string }) {
+  if (!lat || !lng) return null;
+  const data: AxiosResponse = await axios.get(
+    "http://localhost:3002/location",
+    {
+      params: { lat, lng },
+    }
+  );
+
+  if (!data || data.data.status !== "OK") return;
+
+  const { results } = data.data;
+  console.log(data.data);
+
+  const arr = results.filter((r: any) =>
+    r.types.some((st: string) => st.includes("sublocality_"))
+  );
+
+  const city = arr[arr.length - 1].address_components[0].long_name;
+  return city;
+}
+export async function satelliteData({
+  lat,
+  lng,
+}: {
+  lat: string;
+  lng: string;
+}) {
+  const data = await axios.get("http://localhost:3002/get_satelliteData", {
+    params: {
+      lat,
+      lng,
+    },
+  });
+
+  return data;
 }

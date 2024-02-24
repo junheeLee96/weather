@@ -61,13 +61,13 @@ app.get("/location", async (req, res) => {
   let geocodingUrl;
   if (req.query.lat) {
     const { lat, lng } = req.query;
-    geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat}, ${lng}&sensor=false&key=${apiKey}`;
+    geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat}, ${lng}&sensor=false&key=${apiKey}&language=ko`;
   } else {
     const { location } = req.query;
     geocodingUrl =
       geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-        address
-      )}&key=${apiKey}`;
+        location
+      )}&key=${apiKey}&language=ko`;
   }
 
   // let geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
@@ -81,6 +81,25 @@ app.get("/location", async (req, res) => {
   } catch (err) {
     res.status(500).json({ err: err });
   }
+
+  app.get("/get_satelliteData", async (req, res) => {
+    const { lat, lng } = req.query;
+    const lon = lng;
+    const url = "https://api.openweathermap.org/data/3.0/onecall";
+    const key = process.env.API_OPENWEATHER_KEY;
+    const params = {
+      lat,
+      lon,
+      exclude: "current",
+      appid: key,
+      lang: "kr",
+    };
+
+    const data = await axios.get(url, { params });
+    // if (!data.data) return null;
+
+    res.send(data.data);
+  });
 });
 
 // app.get('/get_')

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { createContext, useEffect, useRef, useState } from "react";
 import {
   SelectCity,
   currentWeather,
+  getCity,
   getCurrentWeather,
   getPoly,
   satelliteData,
@@ -11,6 +12,7 @@ import {
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import axios from "axios";
 import { InfoWindowJSX } from "../ui/infoWindow";
+import Board from "../ui/Board";
 const key = "AIzaSyBRLNCa54UheNNoqc4IbasOxUFwYVe7QhM";
 
 interface localDataTypes {
@@ -29,6 +31,13 @@ interface goecodeTypes extends locationType {
   temp: number;
 }
 
+type locationTypes = {
+  lat: string | null;
+  lng: string | null;
+};
+
+export const locationContext = createContext<null | locationTypes>(null);
+
 export default function MyMap({ children }: any): JSX.Element {
   const mapRef = useRef<null | HTMLDivElement>(null);
   const googleRef = useRef<any>(null);
@@ -36,15 +45,10 @@ export default function MyMap({ children }: any): JSX.Element {
   const polyRef = useRef<any>(null);
 
   const searchParams = useSearchParams();
-  // console.log(searchParams.get("lat"));
   const pathname = usePathname();
   const { replace } = useRouter();
 
   const [map, setMap] = useState<null | google.maps.Map>(null);
-  const [localData, setLocalData] = useState<localDataTypes>({
-    location: "",
-    temp: 0,
-  });
 
   useEffect(() => {
     const lat = searchParams.get("lat");
@@ -70,7 +74,7 @@ export default function MyMap({ children }: any): JSX.Element {
       script.defer = true;
       document.head.appendChild(script);
     } else {
-      initMap();
+      if (!map) initMap();
     }
 
     return () => {
@@ -81,23 +85,34 @@ export default function MyMap({ children }: any): JSX.Element {
   async function UpdateParam({ lat, lng }: { lat: string; lng: string }) {
     // if (!map) return;
 
+    // setLocation({ lat, lng });
+
+    // const data = await satelliteData({ lat, lng });
+    // console.log(data);
+
+    const queryParam = new URLSearchParams(searchParams);
+    queryParam.set("lat", String(lat));
+    queryParam.set("lng", String(lng));
+    replace(`${pathname}?${queryParam.toString()}`);
+
     if (polyRef.current) {
       polyRef.current.setMap(null);
     }
+    //getting poly, weather
 
-    polyRef.current = await getPoly({ lat, lng });
+    const [poly, weather] = await Promise.all([
+      getPoly({ lat, lng }),
+      axios.get("http://localhost:3002/currentWeather", {
+        params: { lat, lng },
+      }),
+    ]);
+
+    polyRef.current = poly;
     polyRef.current.setMap(googleRef.current);
 
-    const weather = await axios.get("http://localhost:3002/currentWeather", {
-      params: { lat, lng },
-    });
     if (!weather.data) return;
-    let cityName = await axios.get("http://localhost:3002/location", {
-      params: { lat, lng },
-    });
-    cityName = SelectCity(cityName);
+    const { icon, main } = weather.data.weather[0];
 
-    //Info Window
     if (infoWindow.current) {
       infoWindow.current.close();
     }
@@ -109,88 +124,9 @@ export default function MyMap({ children }: any): JSX.Element {
       },
     });
     const locationLatLng = new window.google.maps.LatLng(lat, lng);
-    const content = InfoWindowJSX({ city: cityName });
     infoWindow.current.setPosition(locationLatLng);
-    infoWindow.current.setContent(InfoWindowJSX({ city: cityName }), null, 2);
+    infoWindow.current.setContent(InfoWindowJSX({ icon, main }), null, 2);
     infoWindow.current.open(googleRef.current);
-
-    // const queryParam = new URLSearchParams({
-    //   lat,
-    //   lng,
-    //   //  location: location.formatted_address,
-    // });
-    // // const apiKey = "AIzaSyBRLNCa54UheNNoqc4IbasOxUFwYVe7QhM";
-    // // const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat}, ${lng}&sensor=false&key=${apiKey}`;
-    // // const data = await axios.get(geocodingUrl);
-    // const data = await axios.get("http://localhost:3002/location", {
-    //   params: {
-    //     lat,
-    //     lng,
-    //   },
-    // });
-    // replace(`${pathname}?${queryParam.toString()}`);
-  }
-
-  function geocode({ lat, lng, map, temp }: goecodeTypes) {
-    const geocoder = new window.google.maps.Geocoder();
-    if (!geocoder) return;
-    if (!map) {
-      return;
-    }
-    const location = {
-      lat,
-      lng,
-    };
-
-    (async () => {
-      // const zz = await axios.get("http://localhost:3002/location");
-      // const data = await satelliteData({
-      //   lat: lat,
-      //   lon: lng,
-      // });
-    })();
-
-    return;
-
-    geocoder.geocode(
-      {
-        location,
-      },
-      (results: any, status: any) => {
-        if (status === "OK" && results && results.length) {
-          var filtered_array = results.filter((r: any) =>
-            r.types.some((st: string) => st.includes("sublocality_"))
-          );
-
-          // console.log(filtered_array);
-          const location = filtered_array[filtered_array.length - 1];
-          // console.log(searchParams);
-          const queryParam = new URLSearchParams({
-            lat: String(lat),
-            lng: String(lng),
-            location: location.formatted_address,
-          });
-          replace(`${pathname}?${queryParam.toString()}`);
-          // setLocalData((p: localDataTypes) => {
-          //   return {
-          //     ...p,
-          //     temp,
-          //     location: location.formatted_address,
-          //   };
-          // });
-          const center = {
-            lat: filtered_array[filtered_array.length - 1].geometry.bounds
-              .getCenter()
-              .lat(),
-            lng: filtered_array[filtered_array.length - 1].geometry.bounds
-              .getCenter()
-              .lng(),
-          };
-
-          map.panTo(center);
-        }
-      }
-    );
   }
 
   // 지도 초기화
@@ -214,21 +150,6 @@ export default function MyMap({ children }: any): JSX.Element {
           lng: String(currentLocation.lng),
         });
 
-        // 행정구역
-        // let bermudaTriangle = await getPoly({
-        //   lat: currentLocation.lat,
-        //   lng: currentLocation.lng,
-        // });
-        // bermudaTriangle.setMap(map);
-
-        //쿼리스트링, 구글맵 센터 정렬
-        geocode({
-          lat: currentLocation.lat,
-          lng: currentLocation.lng,
-          map,
-          temp: 0,
-        });
-
         map.addListener("click", async (mapsMouseEvent: any) => {
           // get positions
           const lat = mapsMouseEvent.latLng.lat();
@@ -237,30 +158,6 @@ export default function MyMap({ children }: any): JSX.Element {
             lat: String(lat),
             lng: String(lng),
           });
-
-          // geocode({ lat, lng, map, temp: 0 });
-
-          // Close the current InfoWindow.
-          // const temp = await getCurrentWeather({ lat, lng });
-
-          // bermudaTriangle.setMap(null);
-          // bermudaTriangle = await getPoly({
-          //   lat,
-          //   lng,
-          //   map,
-          // });
-          // bermudaTriangle.setMap(map);
-          // getPoly({ lat, lng, map });
-          //Info Window
-          // infoWindow.close();
-          // // Create a new InfoWindow.
-          // infoWindow = new window.google.maps.InfoWindow({
-          //   position: mapsMouseEvent.latLng,
-          // });
-          // infoWindow.setContent(
-          //   JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2)
-          // );
-          // infoWindow.open(map);
         });
 
         setMap(map);
@@ -272,11 +169,10 @@ export default function MyMap({ children }: any): JSX.Element {
   }
 
   return (
-    <>
+    <div>
       <div style={{ width: "100%", height: "500px" }}>
         <div id="map" ref={mapRef} style={{ height: "100%", width: "100%" }} />
       </div>
-      {children}
-    </>
+    </div>
   );
 }

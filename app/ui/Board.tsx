@@ -1,9 +1,7 @@
 import City from "./card/city";
-import Graph from "./card/graph";
+import Chart from "./card/chart";
 
 export default async function Board({ searchParams }: any) {
-  console.log(typeof searchParams);
-
   const { lat, lng } = searchParams;
 
   // const data = await satelliteData({
@@ -15,9 +13,15 @@ export default async function Board({ searchParams }: any) {
 
   // return <div style={{ color: "black" }}>{data && <Card data={data} />}</div>;
   return (
-    <div style={{ color: "red" }}>
-      <City searchParams={searchParams} />
-      <Graph searchParams={searchParams} />
+    <div>
+      <div
+        style={{
+          width: "90%",
+        }}
+      >
+        <City searchParams={searchParams} />
+        <Chart searchParams={searchParams} />
+      </div>
     </div>
   );
 }

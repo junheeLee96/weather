@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Project Title / Weather App
 
-## Getting Started
+**
+<img width="300px"src="https://github.com/junheeLee96/weather/assets/89452058/ec8e83f8-0413-4cda-9309-a0d225eeabc0" alt="프로젝트 이미지" >
+**  
+구글맵 API를 이용한 지도 렌더링과 대한민국의 행정구역을 동/읍/리 단위로 표시합니다.
+또한, 해당 행정구역의 날씨를 렌더링합니다.
 
-First, run the development server:
+## Getting Started / 어떻게 시작하나요?
 
-```bash
+dev
+
+```
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+cd server & nodemon app.js
+or
+cd server & node app.js
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Prerequisites / 선행 조건
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+이 프로젝트는 모든 키(구글맵, 브이월드 openWeather)의 유효기간이 2024년 04월까지입니다.
+또한, HTTPS 모드를 지원해야 합니다.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Installing / 설치
 
-## Learn More
+아래 사항들로 현 프로젝트에 관한 모듈들을 설치할 수 있습니다.
 
-To learn more about Next.js, take a look at the following resources:
+packages
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+npm install
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Deployment / 배포
 
-## Deploy on Vercel
+배포를 목적으로 진행한 것이 아닙니다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Built With / 누구랑 만들었나요?
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- [이준희](https://github.com/junheeLee96) - 무엇 무엇을 했어요
+
+## Contributiong / 기여
+
+## License / 라이센스
+
+## Acknowledgments / 감사의 말
+
+- 감사합니다.

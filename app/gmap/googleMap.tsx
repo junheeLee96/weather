@@ -170,7 +170,7 @@ export default function MyMap({ children }: any): JSX.Element {
 
   return (
     <div>
-      <div style={{ width: "100%", height: "500px" }}>
+      <div style={{ width: "100%", height: "300px" }}>
         <div id="map" ref={mapRef} style={{ height: "100%", width: "100%" }} />
       </div>
     </div>

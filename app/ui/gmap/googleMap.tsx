@@ -8,39 +8,19 @@ import {
   getCurrentWeather,
   getPoly,
   satelliteData,
-} from "../data/data";
+} from "../../data/data";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import axios from "axios";
-import { InfoWindowJSX } from "../ui/infoWindow";
-import Board from "../ui/Board";
+import { InfoWindowJSX } from "../infoWindow";
+import Board from "../Board";
+import { locationTypes } from "@/app/types/type";
 const key = "AIzaSyBRLNCa54UheNNoqc4IbasOxUFwYVe7QhM";
-
-interface localDataTypes {
-  location: string;
-  temp: number;
-}
-
-type locationType = {
-  lat: number;
-  lng: number;
-  lon?: number;
-};
-
-interface goecodeTypes extends locationType {
-  map: google.maps.Map;
-  temp: number;
-}
-
-type locationTypes = {
-  lat: string | null;
-  lng: string | null;
-};
 
 export const locationContext = createContext<null | locationTypes>(null);
 
-export default function MyMap({ children }: any): JSX.Element {
+export default function MyMap(): JSX.Element {
   const mapRef = useRef<null | HTMLDivElement>(null);
-  const googleRef = useRef<any>(null);
+  const googleRef = useRef<null | google.maps.Map>(null);
   const infoWindow = useRef<any>(null);
   const polyRef = useRef<any>(null);
 
@@ -61,7 +41,7 @@ export default function MyMap({ children }: any): JSX.Element {
   }, [searchParams]);
 
   useEffect(() => {
-    // return;
+    // render gmap
 
     window.initMap = initMap;
 
@@ -82,14 +62,7 @@ export default function MyMap({ children }: any): JSX.Element {
     };
   }, []);
 
-  async function UpdateParam({ lat, lng }: { lat: string; lng: string }) {
-    // if (!map) return;
-
-    // setLocation({ lat, lng });
-
-    // const data = await satelliteData({ lat, lng });
-    // console.log(data);
-
+  async function UpdateParam({ lat, lng }: locationTypes) {
     const queryParam = new URLSearchParams(searchParams);
     queryParam.set("lat", String(lat));
     queryParam.set("lng", String(lng));
@@ -98,8 +71,8 @@ export default function MyMap({ children }: any): JSX.Element {
     if (polyRef.current) {
       polyRef.current.setMap(null);
     }
-    //getting poly, weather
 
+    // 경계, 날씨
     const [poly, weather] = await Promise.all([
       getPoly({ lat, lng }),
       axios.get("http://localhost:3002/currentWeather", {
@@ -162,15 +135,13 @@ export default function MyMap({ children }: any): JSX.Element {
 
         setMap(map);
         googleRef.current = map;
-
-        // }
       });
     }
   }
 
   return (
     <div>
-      <div style={{ width: "100%", height: "300px" }}>
+      <div style={{ width: "100%", height: "00px" }}>
         <div id="map" ref={mapRef} style={{ height: "100%", width: "100%" }} />
       </div>
     </div>

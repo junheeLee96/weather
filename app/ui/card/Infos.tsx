@@ -2,7 +2,6 @@ import React from "react";
 import { PADDING } from "./chart";
 
 const Infos = ({ weathers, xStep }: any) => {
-  console.log(weathers);
   return (
     <div
       style={{

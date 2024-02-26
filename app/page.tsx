@@ -1,6 +1,6 @@
 import { ReadonlyURLSearchParams } from "next/navigation";
 import Board from "./ui/Board";
-import MyMap from "./gmap/googleMap";
+import MyMap from "./ui/gmap/googleMap";
 import { Suspense } from "react";
 import Script from "next/script";
 import { config } from "@fortawesome/fontawesome-svg-core";

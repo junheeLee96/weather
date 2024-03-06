@@ -13,7 +13,7 @@ export default async function Board({ searchParams }: any) {
 
   // return <div style={{ color: "black" }}>{data && <Card data={data} />}</div>;
   return (
-    <div>
+    <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
       <div
         style={{
           width: "90%",

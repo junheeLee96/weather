@@ -1,8 +1,7 @@
 # Project Title / Weather App
 
-**
-<img width="300px"src="https://github.com/junheeLee96/weather/assets/89452058/ec8e83f8-0413-4cda-9309-a0d225eeabc0" alt="프로젝트 이미지" >
-**  
+![스크린샷 2024-03-06 오후 11 06 36](https://github.com/junheeLee96/discord-clone/assets/89452058/868ed4cc-5f8a-4ac8-a3dd-dced8a3b74cb)
+
 구글맵 API를 이용한 지도 렌더링과 대한민국의 행정구역을 동/읍/리 단위로 표시합니다.
 또한, 해당 행정구역의 날씨를 렌더링합니다.
 
